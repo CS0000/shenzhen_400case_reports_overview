@@ -7,6 +7,24 @@ https://opendata.sz.gov.cn/data/dataSet/toDataDetails/29200_01503668
 
 需注册账号获取数据。本项目中不包含原始数据。自行下载数据后更改app.py中原始数据路径即可。
 
+
+### to be done...
+- [x] 在主图中加入出院时间及在深圳市外活动的区间:
+* 加上了各个病例在武汉活动的区间及出院时间。如在武汉区间(stay_in_wuhan_from/to)
+* 区间的stay_in_wuhan_from为2019/10/1/，则表明该病例常驻武汉。
+* 如区间只有一个点，则表明该病例在武汉短暂逗留，非常驻武汉。
+
+- [X] hoverinfo中需要包含更多详细信息
+* 在主图hover中加入了caseID, 相关日期，Note(备注症状与途径地)
+* 在副图hover中加入了caseID,相关Metadata信息
+
+- [ ] 死亡病例特殊标记
+- [ ] 概况折线图：x轴为日期，y轴为个案counts，包含5条折线（确诊，危重症，出院，隔离治疗，医学观察）
+
+
+:sparkling_heart:  :sparkling_heart:  :sparkling_heart:  :sparkling_heart:  :sparkling_heart:
+
+
 ### 操作示例
 `$ python app.py `
 Running on http://127.0.0.1:8050/...
@@ -19,13 +37,4 @@ Running on http://127.0.0.1:8050/...
 左边为metadata副图，即400病例的性别，年龄段及居住地。
 ![updated to 20200224](https://github.com/CS0000/shenzhen_400case_reports_overview/blob/master/demo_result/20200224_demo.png)
 
-### to be done...
-- [x] 在主图中加入出院时间及在深圳市外活动的区间:
-* 加上了各个病例在武汉活动的区间及出院时间。如在武汉区间(stay_in_wuhan_from/to)
-* 区间的stay_in_wuhan_from为2019/10/1/，则表明该病例常驻武汉。
-* 如区间只有一个点，则表明该病例在武汉短暂逗留，非常驻武汉。
 
-- [ ] 死亡病例特殊标记
-- [ ] hoverinfo中需要包含更多详细信息
-- [ ] 概况折线图：x轴为日期，y轴为个案counts，包含5条折线（确诊，危重症，出院，隔离治疗，医学观察）
-:sparkling_heart:

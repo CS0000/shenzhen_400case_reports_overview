@@ -7,6 +7,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 from data_processing import *
+import textwrap
 
 
 # import case report data
@@ -75,6 +76,10 @@ def single_class_trace_fun(df_filter, cc):
                                              y=single_class_df.index.tolist(),
                                              mode='markers',
                                              name=c,
+                                             hovertemplate=
+                                             '<br><b>caseID</b>: %{y}<br>'+
+                                             '%{text}',
+                                             text=['{0}: {1}'.format(cc,i) for i in single_class_df[cc].tolist()],
                                              marker=dict(color=cc_color[cc][c],
                                                          size=10),
                                              legendgroup=cc))
@@ -192,12 +197,23 @@ def update_graph(se_gender,se_residence):
 
     # generate main plot
     trace_list = []
-    # color_dict = dict(zip(time3.columns,
-    #                       ['rgb(84,141,219)','rgb(242,93,93)','rgb(142,204,126)']))
+
+    notes = case_report.loc[time5_sub_filter.index,
+                            'bzzzytjd'].apply(lambda txt: '<br>'.join(textwrap.wrap(str(txt),width=14)))
+
     for i in time5.columns:
+        note = ['<b>{0}</b>:<br>{1}<br>'.format(i,time5_sub_filter.loc[id,i])+
+                '<br><b>Note</b>: '+notes[id] for id in time5_sub_filter.index.tolist()]
+        # notes =
+
         tra = go.Scatter(x=time5_sub_filter[i].tolist(),
                          y=time5_sub_filter.index.tolist(),
                          mode='markers',
+                         hovertemplate=
+                         '<br><b>caseID</b>: %{y}<br>'+
+                         '<br>%{text}',
+                         text=note,
+                         hoverlabel=dict(namelength=-1),
                          name=i,
                          marker=dict(color=time_color_dict[i],
                                      size=10))
@@ -235,7 +251,8 @@ def update_graph(se_gender,se_residence):
                                     size=20),
                           legend={'font':dict(size=22),
                                   'itemsizing': 'constant',},
-                          hoverlabel=dict(font=dict(size=20)))
+                          hoverlabel=dict(font=dict(size=18))
+                          )
 
     fig_sub.update_xaxes(tickangle=45)
     for i in ['yaxis','yaxis2']:
