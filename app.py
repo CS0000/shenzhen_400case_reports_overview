@@ -2,26 +2,26 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
 import plotly
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
+from data_processing import *
 
 
-# load data:
-case_report_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//深圳市“新型肺炎”-每日新增确诊病例个案详情_2920001503668.csv'
-case_report = pd.read_csv(case_report_file,sep=',',engine='python',encoding='utf-8')
-case_report.index = case_report.blh.tolist()
+# import case report data
+# case_report: readed raw case report file
+# time5: dataframe contain 5 kinds (6 individuals) of time points included:
+# 'stay_in_wuhan_from', 'stay_in_wuhan_to',
+# 'sz_arrive', 'onset', 'hospitalized',
+# 'hospital_discharge'
+time5 = hospital_discharge_process().get_time5()
 
-
-# rearrange data,set color dictionary
-time3 = case_report.loc[:,['lssj','fbingsj','rysj']]
-time3.columns = ['sz_arrive','onset','hospitalized']
-time3 = time3.apply(lambda x:pd.to_datetime(x, errors='coerce'))
-
-time3_sub = pd.concat([time3,case_report.loc[:,['xb','jzd','nl']]],sort=False,axis=1)
-time3_sub.columns = ['sz_arrive', 'onset', 'hospitalized','gender','residence','age']
+time5_sub = pd.concat([time5,case_report.loc[:,['xb','jzd','nl']]],sort=False,axis=1)
+time5_sub.columns = ['stay_in_wuhan_from', 'stay_in_wuhan_to',
+                     'sz_arrive', 'onset', 'hospitalized',
+                     'hospital_discharge',
+                     'gender','residence','age']
 
 gender_color_dict = {'男': 'rgb(137,0,255)',  # light purple
                      '女': plotly.colors.sequential.Burg[0]}  # light pink
@@ -33,6 +33,13 @@ age_color_dict = dict(zip(['age <=20', 'age: 21-55', 'age >= 55', None],
                           ['rgb(218,248,227)',
                            'rgb(0,194,199)',
                            'rgb(0,85,130)', 'black']))
+
+time_color_dict = dict(zip(['stay_in_wuhan_from', 'stay_in_wuhan_to',
+                            'sz_arrive', 'onset', 'hospitalized',
+                            'hospital_discharge'],
+                           ['rgb(255,255,255)','rgb(255,230,77)',
+                            'rgb(84,141,219)','rgb(242,93,93)','rgb(142,204,126)',
+                            'blue']))
 
 def resi_class_assign(single_cell):
     # assign 居住地 as hubei_others, hubei_wuhan, shenzhen, others
@@ -56,7 +63,7 @@ def age_range_assign(single_cell):
     else:
         return 'age <=20'
 def single_class_trace_fun(df_filter, cc):
-    # cc: string in 'gender','age_range','residence_class','time3'
+    # cc: string in 'gender','age_range','residence_class'
     # generate metadata subplot
     cc_color = {'gender': gender_color_dict,
                 'age_range': age_color_dict,
@@ -73,8 +80,8 @@ def single_class_trace_fun(df_filter, cc):
                                              legendgroup=cc))
     return single_class_trace
 
-time3_sub['residence_class'] = [resi_class_assign(str(i)) for i in time3_sub['residence'].tolist()]
-time3_sub['age_range'] = [age_range_assign(int(i)) for i in time3_sub['age'].tolist()]
+time5_sub['residence_class'] = [resi_class_assign(str(i)) for i in time5_sub['residence'].tolist()]
+time5_sub['age_range'] = [age_range_assign(int(i)) for i in time5_sub['age'].tolist()]
 
 
 
@@ -122,7 +129,7 @@ app.layout = html.Div(style={'backgroundColor':colors['background'],
                 ),
                 dcc.Dropdown(
                     id='gender',
-                    options=[{'label': v, 'value': v} for v in time3_sub['gender'].unique()],
+                    options=[{'label': v, 'value': v} for v in time5_sub['gender'].unique()],
                     placeholder='Select gender',
                     multi=True,
                     value='女',
@@ -145,7 +152,7 @@ app.layout = html.Div(style={'backgroundColor':colors['background'],
                 ),
                 dcc.Dropdown(
                     id='residence',
-                    options=[{'label':v,'value':v} for v in time3_sub['residence_class'].unique()],
+                    options=[{'label':v,'value':v} for v in time5_sub['residence_class'].unique()],
                     placeholder='Select residence',
                     multi=True,
                     value='shenzhen',
@@ -179,27 +186,27 @@ def update_graph(se_gender,se_residence):
     if type(se_residence) == str:
         se_residence = [se_residence]
 
-    time3_sub_filter = time3_sub.loc[(time3_sub['gender'].isin(se_gender))&
+    time5_sub_filter = time5_sub.loc[(time5_sub['gender'].isin(se_gender))&
                                      # ((time3_sub['age']>=se_age[0])&(time3_sub['age']<=se_age[1]))&
-                                     (time3_sub['residence_class'].isin(se_residence)),:]
+                                     (time5_sub['residence_class'].isin(se_residence)),:]
 
     # generate main plot
     trace_list = []
-    color_dict = dict(zip(time3.columns,
-                          ['rgb(84,141,219)','rgb(242,93,93)','rgb(142,204,126)']))
-    for i in time3.columns:
-        tra = go.Scatter(x=time3_sub_filter[i].tolist(),
-                         y=time3_sub_filter.index.tolist(),
+    # color_dict = dict(zip(time3.columns,
+    #                       ['rgb(84,141,219)','rgb(242,93,93)','rgb(142,204,126)']))
+    for i in time5.columns:
+        tra = go.Scatter(x=time5_sub_filter[i].tolist(),
+                         y=time5_sub_filter.index.tolist(),
                          mode='markers',
                          name=i,
-                         marker=dict(color=color_dict[i],
+                         marker=dict(color=time_color_dict[i],
                                      size=10))
         trace_list.append(tra)
 
     trace_line = []
-    for p in time3_sub_filter.index.tolist():
-        trace_line.append(go.Scatter(x=time3_sub_filter.loc[p, :].tolist(),
-                                     y=[p, p, p],
+    for p in time5_sub_filter.index.tolist():
+        trace_line.append(go.Scatter(x=time5_sub_filter.loc[p, :].tolist(),
+                                     y=[p,p,p,p,p,p],
                                      mode='lines',
                                      name=p,
                                      line=dict(color='rgb(231,107,243)', width=2),
@@ -208,7 +215,7 @@ def update_graph(se_gender,se_residence):
 
     sub_traces = []
     for i in ['gender','age_range','residence_class']:
-        sub_traces += single_class_trace_fun(time3_sub_filter,i)
+        sub_traces += single_class_trace_fun(time5_sub_filter,i)
 
     # fig_sub: mainplot + subplot,which is the final plot
     fig_sub = make_subplots(rows=1, cols=2,column_widths=[0.1, 0.9],
@@ -221,7 +228,7 @@ def update_graph(se_gender,se_residence):
     for i in trace_line+trace_list:
         fig_sub.add_trace(i,row=1,col=2)
 
-    fig_sub.update_layout(height=2800, width=1200,
+    fig_sub.update_layout(height=4400, width=1200,
                           plot_bgcolor=colors['background'],
                           paper_bgcolor=colors['background'],
                           font=dict(color=colors['text'],
