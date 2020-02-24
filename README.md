@@ -38,3 +38,12 @@ Running on http://127.0.0.1:8050/...
 ![updated to 20200224](https://github.com/CS0000/shenzhen_400case_reports_overview/blob/master/demo_result/20200224_demo.png)
 
 
+<<<<<<< HEAD
+=======
+- [ ] 死亡病例特殊标记
+- [ ] hoverinfo中需要包含更多详细信息
+- [ ] 概况折线图：x轴为日期，y轴为个案counts，包含5条折线（确诊，危重症，出院，隔离治疗，医学观察）
+
+
+:sparkling_heart:
+>>>>>>> 249601ccb83b3b0b75790765c2d33f15b57b4e93
