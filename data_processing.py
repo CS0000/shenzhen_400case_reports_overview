@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 
 case_report_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//深圳市“新型肺炎”-每日新增确诊病例个案详情_2920001503668.csv'
 case_report = pd.read_csv(case_report_file, sep=',', engine='python', encoding='utf-8')
@@ -8,6 +9,11 @@ hospital_discharge_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//022
 hospital_discharge = pd.read_csv(hospital_discharge_file, sep=',', engine='python', encoding='utf-8')
 hospital_discharge.index = hospital_discharge.blh.tolist()
 hospital_discharge = hospital_discharge.iloc[hospital_discharge.index<=400,:] # all of it actually
+
+day_summary = pd.read_csv('C://Users//Chen Shuo//Documents//20200215_CoVtry//0221_深圳市“新型肺炎”-每日诊疗情况_2920001503673.csv',engine='python',sep=',',encoding='utf-8')
+day_summary.columns = ['severe_case','accumulated_death','critical_severe_case','until_time',
+                       'accumulated_confirmed','accumulated_discharge','current_isolated',
+                       'current_medical_obs','until_date']
 
 class case_report_process:
 
@@ -92,12 +98,32 @@ class hospital_discharge_process:
         return self.time5
 
 
+class day_summary_process:
+    def __init__(self):
+        self.day_summary = day_summary
+        self.day_summary_f = pd.DataFrame
+
+    def get_day_summary_f(self):
+        self.day_summary_f = day_summary.replace('-',0)
+        self.day_summary_f['until_date'] = self.day_summary_f['until_date'].apply(lambda x: x.replace('月', '/').replace('日', '/'))
+
+        self.day_summary_f['until_time'] = ['00' if pd.isna(i) else i for i in self.day_summary_f['until_time'].tolist()]
+        self.day_summary_f['until_time'] = ['23' if i == '24时' else str(i)[0:2] for i in self.day_summary_f['until_time'].tolist()]
+        self.day_summary_f['until_date'] = '2020/' + self.day_summary_f['until_date'] + ' ' + self.day_summary_f['until_time'] + ':00'
+
+        self.day_summary_f['until_date'] = self.day_summary_f['until_date'].apply(
+            lambda x: datetime.datetime.strptime(x, '%Y/%m/%d/ %H:%M'))
+        self.day_summary_f = self.day_summary_f.loc[:,
+                             ['until_date', 'accumulated_confirmed', 'current_isolated', 'current_medical_obs',
+                              'severe_case', 'critical_severe_case',
+                              'accumulated_discharge']]
+        self.day_summary_f['all_severe'] = self.day_summary_f['severe_case'].apply(lambda x: int(x)) +\
+                                           self.day_summary_f['critical_severe_case'].apply(lambda x: int(x))
+        return self.day_summary_f
 
 if __name__ == '__main__':
-    tt = hospital_discharge_process()
-    # test = tt.get_time4()
-    # print(test.head())
-    print(tt.get_time5().head())
+    tt = day_summary_process()
+    print(tt.get_day_summary_f().head())
 
 
 

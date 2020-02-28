@@ -24,6 +24,8 @@ time5_sub.columns = ['stay_in_wuhan_from', 'stay_in_wuhan_to',
                      'hospital_discharge',
                      'gender','residence','age']
 
+day_summary_f = day_summary_process().get_day_summary_f()
+
 gender_color_dict = {'男': 'rgb(137,0,255)',  # light purple
                      '女': plotly.colors.sequential.Burg[0]}  # light pink
 
@@ -84,6 +86,22 @@ def single_class_trace_fun(df_filter, cc):
                                                          size=10),
                                              legendgroup=cc))
     return single_class_trace
+def single_meta_sum(df_sub,meta):
+    # meta: gender, residence_class, age_range
+    # df_sub: time5_sub
+    # return single meta data list
+    cc_color = {'gender': gender_color_dict,
+                'age_range': age_color_dict,
+                'residence_class': residence_color_dict}
+    test_trace = []
+    sub_sum = df_sub[meta].value_counts()
+    for i in sub_sum.index:
+        test_trace.append(go.Bar(x=[meta],
+                                 y = [sub_sum[i]],
+                                 name = i,
+                                 marker=dict(color=cc_color[meta][i])))
+    return test_trace
+
 
 time5_sub['residence_class'] = [resi_class_assign(str(i)) for i in time5_sub['residence'].tolist()]
 time5_sub['age_range'] = [age_range_assign(int(i)) for i in time5_sub['age'].tolist()]
@@ -108,20 +126,29 @@ app.layout = html.Div(style={'backgroundColor':colors['background'],
 
         html.H3(children=[
             '''
-            * The main plot on the right side visualizes the time arriving Shenzhen,onset and hospitalized
-              in every case, connecting with pink lines.
-              '''],
+              **visualized as 4 plots:metadata summary, summary each day, metadata of each case and main plot.'''],
             style={'textAlign':'left','color':colors['text'],
                    'width':'90%'}
         ),
 
-        html.H3(children=[
-            '''
-              * The subplot on the left describes case's metadata,
-              including gender, rough age range and residences.'''],
+        html.P(children=[
+            '*meatadata_|*summary each day(counts):',html.Br(),
+            'summary___|all_severe',html.Br(),
+            'counts______|accumulated_confirmed',html.Br(),
+            '_____________|current_isolated',html.Br(),
+            '_____________|current_medical_obs',html.Br(),
+            '_____________|accumulated_discharge',html.Br(),
+            '------------------|--------------------',html.Br(),
+            '*metadata__|*main plot:',html.Br(),
+            'of each case|visualizes the time stayingin wuhan,',html.Br(),
+            '_____________|arriving Shenzhen',html.Br(),
+            '_____________|onset,hospitalized and discharge in every case,connecting with pink lines',html.Br(),
+            ''
+            ],
             style={'textAlign':'left','color':colors['text'],
-                   'width':'90%'}
+                   'width':'90%','font-size':'140%'}
         ),
+
 
         html.Div( # gender dropdown
             [
@@ -195,6 +222,7 @@ def update_graph(se_gender,se_residence):
                                      # ((time3_sub['age']>=se_age[0])&(time3_sub['age']<=se_age[1]))&
                                      (time5_sub['residence_class'].isin(se_residence)),:]
 
+
     # generate main plot
     trace_list = []
 
@@ -233,35 +261,72 @@ def update_graph(se_gender,se_residence):
     for i in ['gender','age_range','residence_class']:
         sub_traces += single_class_trace_fun(time5_sub_filter,i)
 
-    # fig_sub: mainplot + subplot,which is the final plot
-    fig_sub = make_subplots(rows=1, cols=2,column_widths=[0.1, 0.9],
-                            shared_yaxes=True,
-                            horizontal_spacing=0.01)
+
+    sum_color_dict = {'all_severe':'rgb(249,0,0)','accumulated_confirmed':'rgb(255,185,60)',
+                      'current_isolated':'rgb(255,143,179)','current_medical_obs':'rgb(176,106,212)',
+                      'accumulated_discharge':'rgb(94,175,223)'}
+    sum_trace_list = []
+    for i in ['all_severe', 'accumulated_confirmed', 'current_isolated', 'current_medical_obs',
+              'accumulated_discharge']:
+        trace = go.Scatter(x=day_summary_f['until_date'],
+                           y=day_summary_f[i],
+                           name=i,
+                           mode='markers+lines',
+                           marker=dict(color=sum_color_dict[i]))
+        sum_trace_list.append(trace)
+
+
+    # fig_sub: mainplot + subplot + meta_sum_plot + sum_trace_list,which is the final plot
+    fig_sub = make_subplots(rows=2, cols=2,column_widths=[0.1, 0.9],
+                            row_width=[0.9,0.1],
+                            # shared_yaxes=True,
+                            shared_xaxes=True,
+                            horizontal_spacing=0.05,
+                            vertical_spacing=0)
     for i in sub_traces:
-        fig_sub.add_trace(i,row=1,col=1)
+        fig_sub.add_trace(i,row=2,col=1)
 
 
     for i in trace_line+trace_list:
+        fig_sub.add_trace(i,row=2,col=2)
+
+
+    meta_sum = single_meta_sum(time5_sub_filter, 'gender') + \
+               single_meta_sum(time5_sub_filter, 'age_range') + \
+               single_meta_sum(time5_sub_filter,'residence_class')
+    for i in meta_sum:
+        fig_sub.add_trace(i, row=1, col=1)
+
+
+    for i in sum_trace_list:
         fig_sub.add_trace(i,row=1,col=2)
+
 
     fig_sub.update_layout(height=4400, width=1200,
                           plot_bgcolor=colors['background'],
                           paper_bgcolor=colors['background'],
                           font=dict(color=colors['text'],
-                                    size=20),
+                                    size=15),
                           legend={'font':dict(size=22),
                                   'itemsizing': 'constant',},
-                          hoverlabel=dict(font=dict(size=18))
+                          hoverlabel=dict(font=dict(size=18)),
+                          barmode='stack'
                           )
 
-    fig_sub.update_xaxes(tickangle=45)
-    for i in ['yaxis','yaxis2']:
+    # fig_sub.update_xaxes(tickangle=45)
+    for i in ['yaxis','yaxis2','yaxis3','yaxis4']:
         fig_sub['layout'][i]['showgrid'] = False
-        fig_sub['layout'][i]['side'] = 'right'
+        # fig_sub['layout'][i]['side'] = 'right'
 
-    for i in ['xaxis','xaxis2']:
+    for i in ['xaxis','xaxis2','xaxis3','xaxis4']:
         fig_sub['layout'][i]['showgrid'] = False
-        fig_sub['layout'][i]['side'] = 'top'
+        # fig_sub['layout'][i]['tickangle'] = 45
+
+    fig_sub['layout']['yaxis3']['range'] = [0,402]
+    fig_sub['layout']['yaxis4']['range'] = [0,402]
+
+    fig_sub['layout']['xaxis1']['tickangle'] =45
+    fig_sub['layout']['xaxis4']['side'] = 'top'
     # fig_sub.show()
     return fig_sub
 
