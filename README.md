@@ -21,19 +21,7 @@ https://opendata.sz.gov.cn/data/dataSet/toDataDetails/29200_01503668
 - [X] 概况折线图：x轴为日期，y轴为个案counts，包含5条折线（确诊，危重症，出院，隔离治疗，医学观察）
 * 由4个图组成：
 
-meatadata  |summary each day(counts):
-summary    |all_severe
-counts     |accumulated_confirmed
-           |current_isolated
-           |current_medical_obs
-           |accumulated_discharge
------------+-------------------------
-metadata   |main plot:
-of each    |visualizes the time stayingin wuhan,
-case       |arriving Shenzhen
-           |onset,hospitalized and discharge
-           |in every case
-           |connecting with pink lines
+![](https://upload-images.jianshu.io/upload_images/5638276-05c3eea60d0849f6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 - [ ] 需要再加上病例公布时间，公布病例数目为每日新增病例的统计途径，而非发病或者入院(入院不一定是确诊)。
 - [ ] 死亡病例特殊标记
