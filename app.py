@@ -120,7 +120,7 @@ app.layout = html.Div(style={'backgroundColor':colors['background'],
                              'columnCount':1},
                       children=
     [
-        html.H1(children='Shen Zhen: 400 case reports overview',
+        html.H1(children='Shen Zhen: 436 case reports overview',
                 style={'textAlign':'center',
                        'color':colors['text']}),
 
@@ -322,8 +322,8 @@ def update_graph(se_gender,se_residence):
         fig_sub['layout'][i]['showgrid'] = False
         # fig_sub['layout'][i]['tickangle'] = 45
 
-    fig_sub['layout']['yaxis3']['range'] = [0,402]
-    fig_sub['layout']['yaxis4']['range'] = [0,402]
+    fig_sub['layout']['yaxis3']['range'] = [0,438]
+    fig_sub['layout']['yaxis4']['range'] = [0,438]
 
     fig_sub['layout']['xaxis1']['tickangle'] =45
     fig_sub['layout']['xaxis4']['side'] = 'top'

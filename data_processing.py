@@ -1,16 +1,16 @@
 import pandas as pd
 import datetime
 
-case_report_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//深圳市“新型肺炎”-每日新增确诊病例个案详情_2920001503668.csv'
+case_report_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//20200321//深圳市“新型肺炎”-每日新增确诊病例个案详情_2920001503668.csv'
 case_report = pd.read_csv(case_report_file, sep=',', engine='python', encoding='utf-8')
 case_report.index = case_report.blh.tolist()
 
-hospital_discharge_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//0221_深圳市“新型肺炎”-每日新增出院病例_2920001503675.csv'
+hospital_discharge_file = 'C://Users//Chen Shuo//Documents//20200215_CoVtry//20200321//深圳市“新型肺炎”-每日新增出院病例_2920001503675.csv'
 hospital_discharge = pd.read_csv(hospital_discharge_file, sep=',', engine='python', encoding='utf-8')
 hospital_discharge.index = hospital_discharge.blh.tolist()
 hospital_discharge = hospital_discharge.iloc[hospital_discharge.index<=400,:] # all of it actually
 
-day_summary = pd.read_csv('C://Users//Chen Shuo//Documents//20200215_CoVtry//0221_深圳市“新型肺炎”-每日诊疗情况_2920001503673.csv',engine='python',sep=',',encoding='utf-8')
+day_summary = pd.read_csv('C://Users//Chen Shuo//Documents//20200215_CoVtry//20200321//深圳市“新型肺炎”-每日诊疗情况_2920001503673.csv',engine='python',sep=',',encoding='utf-8')
 day_summary.columns = ['severe_case','accumulated_death','critical_severe_case','until_time',
                        'accumulated_confirmed','accumulated_discharge','current_isolated',
                        'current_medical_obs','until_date']
