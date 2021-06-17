@@ -1,12 +1,9 @@
 # Shenzhen 436 case reports overview
 An overview of 436 COVID-19 cases in Shenzhen. Python3 plotly and dash were used to generate visualization.
 
-### data resource 数据来源
-Open dataset from the government of shenzhen 深圳市政府数据开放平台：
+### 数据来源 data resource
+深圳市政府数据开放平台：
 https://opendata.sz.gov.cn/data/dataSet/toDataDetails/29200_01503668
-
-note:
-There won't be any hospital discharge case exposing after Feb 26 2020. 
 
 另外深圳市从2020年2月26日起不再公布出院个案。
 数据截至至2020年3月20日，共计417例既有病例 + 19例输入病例。
